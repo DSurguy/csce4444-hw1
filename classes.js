@@ -1,8 +1,30 @@
+/**
+ * CustomerNode Class
+ */
 function CustomerNode(id, serviceTime){
     this.id = id||undefined;
     this.serviceTime = serviceTime||undefined;
 }
 
+/**
+ * Queue Class
+ */
+function Queue(){
+    this.nodes = [];
+}
+Queue.prototype.dequeue = function (node){
+    return this.nodes.splice(0,1)[0];
+};
+Queue.prototype.queue = function (node){
+    this.nodes.push(node);
+};
+Queue.prototype.isEmpty = function (){
+    return this.nodes.length > 0;
+};
+
+/**
+ * MinHeap Class
+ */
 function MinHeap(size){
     this._nodes = [];
     this._nodes.length = size + 1; //1-based array
@@ -107,10 +129,18 @@ MinHeap.prototype.isFull = function (){
 MinHeap.prototype.isEmpty = function (){
     return this._count == 0;  
 };
+MinHeap.prototype.state = function (){
+    return this._nodes.slice(0);
+};
 
-function Bank(numTellers){
-    this.heap = new MinHeap(numTellers);
+/**
+ * Bank Class
+ */
+function Bank(numTellers, reporter){
+    this.tellerHeap = new MinHeap(numTellers);
+    this.customerQueue = new Queue();
     this.processedCount = 0;
+    this.reporter = reporter||function(){};
 }
 /**
 *   Pop the current customer (with the least time) off the top of the heap,
@@ -122,25 +152,31 @@ function Bank(numTellers){
 */
 Bank.prototype.processCustomer = function (){
     this.processedCount++;
-    this._progress(this.heap.pop().serviceTime);
+    this._progress(this.tellerHeap.pop().serviceTime);
     if( this._shouldLog() ){
         this.log();
     }
-    while(this.heap.head.serviceTime === 0){
+    while(this.tellerHeap.head.serviceTime === 0){
         this.processedCount++;
-        this._progress(this.heap.pop().serviceTime);
+        this._progress(this.tellerHeap.pop().serviceTime);
         if( this._shouldLog() ){
-            this.log();
+            this.reporter(this.tellerHeap.state());
         }
     }
+};
+Bank.prototype.queueCustomer = function (cust){
+    this.customerQueue.push(cust);
 };
 /**
  * Pull customers from a queue until the heap is full or we're out of customers
  */
-Bank.prototype.takeCustomers = function (customerQueue){
-    while(!this.heap.isFull() && !this.customerQueue.isEmpty()){
-        this.heap.push(customerQueue.dequeue())
+Bank.prototype.dequeueCustomers = function (){
+    while(!this.tellerHeap.isFull() && !this.customerQueue.isEmpty()){
+        this.tellerHeap.push(this.customerQueue.dequeue());
     }
+};
+Bank.prototype.isEmpty = function (){
+    return this.customerQueue.isEmpty() && this.tellerHeap.isEmpty();
 };
 /*
 *   Decrement the value of all customer service times by a fixed amount
@@ -152,32 +188,12 @@ Bank.prototype._progress = function(duration){
         customer.serviceTime -= duration;
     });
 };
-Bank.prototype.addCustomer = function (){
-    //TODO?
-};
-Bank.prototype.log = function (){
-    //TODO: output
+Bank.prototype.report = function (){
+    this.reporter(this.tellerHeap.state());
 };
 Bank.prototype.isFull = function (){
-    return this.heap.isFull();
+    return this.tellerHeap.isFull();
 };
 Bank.prototype._shouldLog = function (){
     return this.processedCount&20 === 0;
 };
-Bank.prototype.openForBusiness = function (customerQueue){
-    //TODO: DO EVERYTHING
-};
-
-
-function Queue(){
-    this.nodes = [];
-};
-Queue.prototype.dequeue = function (node){
-    return this.nodes.splice(0,1)[0];
-};
-Queue.prototype.queue = function (node){
-    this.nodes.push(node);
-};
-Queue.prototype.isEmpty = function (){
-    return this.nodes.length > 0;
-}
