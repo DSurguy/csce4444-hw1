@@ -19,7 +19,10 @@ Queue.prototype.queue = function (node){
     this.nodes.push(node);
 };
 Queue.prototype.isEmpty = function (){
-    return this.nodes.length > 0;
+    return this.nodes.length == 0;
+};
+Queue.prototype.getByPriority = function (){
+    return this.nodes.slice(0).reverse();
 };
 
 /**
@@ -29,7 +32,6 @@ function MinHeap(size){
     this._nodes = [];
     this._nodes.length = size + 1; //1-based array
     this._count = 0;
-    this.head = this._nodes[1];
 }
 MinHeap.prototype.pop = function (){
     //throw error if we can't pop
@@ -119,8 +121,10 @@ MinHeap.prototype.push = function (newNode){
     }
 };
 MinHeap.prototype.each = function (callback){
-    for(var i=0; i<this.nodes.length; i++){
-        callback(this.nodes[i]);
+    for(var i=0; i<this._nodes.length; i++){
+        if( this._nodes[i] ){
+            callback(this._nodes[i]);
+        }
     }
 };
 MinHeap.prototype.isFull = function (){
@@ -132,15 +136,20 @@ MinHeap.prototype.isEmpty = function (){
 MinHeap.prototype.state = function (){
     return this._nodes.slice(0);
 };
+MinHeap.prototype.head = function (){
+    return this._nodes[1];
+};
 
 /**
  * Bank Class
  */
-function Bank(numTellers, reporter){
-    this.tellerHeap = new MinHeap(numTellers);
+function Bank(config){
+    config = config||{};
+    this.tellerHeap = new MinHeap(config.numTellers||0);
     this.customerQueue = new Queue();
     this.processedCount = 0;
-    this.reporter = reporter||function(){};
+    this.reporter = config.reporter||function(){};
+    this.reportFrequency = config.reportFrequency||20;
 }
 /**
 *   Pop the current customer (with the least time) off the top of the heap,
@@ -154,18 +163,20 @@ Bank.prototype.processCustomer = function (){
     this.processedCount++;
     this._progress(this.tellerHeap.pop().serviceTime);
     if( this._shouldLog() ){
-        this.log();
+        this.reporter(this.tellerHeap.state());
     }
-    while(this.tellerHeap.head.serviceTime === 0){
+    var head = this.tellerHeap.head();
+    while(head && head.serviceTime === 0){
         this.processedCount++;
         this._progress(this.tellerHeap.pop().serviceTime);
         if( this._shouldLog() ){
             this.reporter(this.tellerHeap.state());
         }
+        head = this.tellerHeap.head();
     }
 };
 Bank.prototype.queueCustomer = function (cust){
-    this.customerQueue.push(cust);
+    this.customerQueue.queue(cust);
 };
 /**
  * Pull customers from a queue until the heap is full or we're out of customers
@@ -184,7 +195,7 @@ Bank.prototype.isEmpty = function (){
 *   ...I'm using progress as a verb here. This makes sense. Go with it.
 */
 Bank.prototype._progress = function(duration){
-    this.minHeap.each(function (customer){
+    this.tellerHeap.each(function (customer){
         customer.serviceTime -= duration;
     });
 };
@@ -195,5 +206,5 @@ Bank.prototype.isFull = function (){
     return this.tellerHeap.isFull();
 };
 Bank.prototype._shouldLog = function (){
-    return this.processedCount&20 === 0;
+    return this.processedCount%this.reportFrequency === 0;
 };
