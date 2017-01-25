@@ -1,5 +1,5 @@
-function CustomerNode(serviceTime){
-    this.id;
+function CustomerNode(id, serviceTime){
+    this.id = id||undefined;
     this.serviceTime = serviceTime||undefined;
 }
 
@@ -25,7 +25,7 @@ MinHeap.prototype.pop = function (){
     //swap the lowest child into the head node
     for( var i=this._nodes.length-1; i>0; i-- ){
         if( this._nodes[i] !== undefined ){
-            this._nodes[0] = this._nodes[i];
+            this._nodes[1] = this._nodes[i];
             this._nodes[i] = undefined;
             break;
         }
@@ -41,14 +41,14 @@ MinHeap.prototype.pop = function (){
         var tempNode;
         leftChild = curPosition*2;
         rightChild = curPosition*2 + 1;
-        if( this._nodes[leftChild] && this._nodes[leftChild].serviceTime < this._nodes[curPosition] ){
+        if( this._nodes[leftChild] && this._nodes[leftChild].serviceTime < this._nodes[curPosition].serviceTime ){
             //swap left
             tempNode = this._nodes[curPosition];
             this._nodes[curPosition] = this._nodes[leftChild];
             this._nodes[leftChild] = tempNode;
             curPosition = leftChild;
         }
-        else if( this._nodes[rightChild] && this._nodes[rightChild].serviceTime < this._nodes[curPosition] ){
+        else if( this._nodes[rightChild] && this._nodes[rightChild].serviceTime < this._nodes[curPosition].serviceTime ){
             //swap right
             tempNode = this._nodes[curPosition];
             this._nodes[curPosition] = this._nodes[rightChild];
