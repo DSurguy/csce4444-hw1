@@ -21,7 +21,7 @@ Queue.prototype.queue = function (node){
 Queue.prototype.isEmpty = function (){
     return this.nodes.length == 0;
 };
-Queue.prototype.getByPriority = function (){
+Queue.prototype.state = function (){
     return this.nodes.slice(0).reverse();
 };
 
@@ -128,7 +128,7 @@ MinHeap.prototype.each = function (callback){
     }
 };
 MinHeap.prototype.isFull = function (){
-    return this._count == this._nodes.length;
+    return this._count == this._nodes.length-1;
 };
 MinHeap.prototype.isEmpty = function (){
     return this._count == 0;  
@@ -160,18 +160,15 @@ function Bank(config){
 *    we will pop them too.
 */
 Bank.prototype.processCustomer = function (){
-    this.processedCount++;
+    //pop the head off the min heap and decrement the service time of all other custs in the heap
     this._progress(this.tellerHeap.pop().serviceTime);
-    if( this._shouldLog() ){
-        this.reporter(this.tellerHeap.state());
-    }
+    
+    //Now we need to check if we should continue popping the head due to multiple service completions
     var head = this.tellerHeap.head();
     while(head && head.serviceTime === 0){
-        this.processedCount++;
+        //pop the head again and decrement service times
         this._progress(this.tellerHeap.pop().serviceTime);
-        if( this._shouldLog() ){
-            this.reporter(this.tellerHeap.state());
-        }
+        
         head = this.tellerHeap.head();
     }
 };
@@ -183,7 +180,12 @@ Bank.prototype.queueCustomer = function (cust){
  */
 Bank.prototype.dequeueCustomers = function (){
     while(!this.tellerHeap.isFull() && !this.customerQueue.isEmpty()){
+        this.processedCount++;
         this.tellerHeap.push(this.customerQueue.dequeue());
+        
+        if( this._shouldLog() ){
+            this.reporter(this.tellerHeap.state(), this.customerQueue.state());
+        }
     }
 };
 Bank.prototype.isEmpty = function (){
@@ -194,13 +196,13 @@ Bank.prototype.isEmpty = function (){
 *
 *   ...I'm using progress as a verb here. This makes sense. Go with it.
 */
-Bank.prototype._progress = function(duration){
+Bank.prototype._progress = function (duration){
     this.tellerHeap.each(function (customer){
         customer.serviceTime -= duration;
     });
 };
 Bank.prototype.report = function (){
-    this.reporter(this.tellerHeap.state());
+    this.reporter(this.tellerHeap.state(), this.customerQueue.state());
 };
 Bank.prototype.isFull = function (){
     return this.tellerHeap.isFull();

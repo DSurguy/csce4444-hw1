@@ -21,25 +21,24 @@ document.querySelector('.simulateButton').addEventListener('click', simulate);
 
 function simulate(){
     var bank = new Bank({
-        numTellers: parseInt(document.querySelector('[name=numTellers]').value),
-        reporter: function (state){
-            console.log(state.filter(function (cust){
-                return !!cust;
-            }).map(function (cust){
-                return cust.serviceTime;
-            }));
+        numTellers: parseInt(document.querySelector('[name=numTellers]').value, 10),
+        reporter: function (heapState, queueState){
+            console.log(heapState.map(function (cust){
+                return cust ? cust.serviceTime : '_';
+            }), queueState.length);
         },
         reportFrequency: 1
     });
-    var numCustomers = parseInt(document.querySelector('[name=numCustomers]').value),
+    var numCustomers = parseInt(document.querySelector('[name=numCustomers]').value, 10),
         customerList = document.querySelector('.customerQueue');
     for( var i=0; i<numCustomers; i++ ){
-        var cust = new CustomerNode(i, Math.floor(Math.random() * (30 - 1 + 1)) + 1);
+        var cust = new CustomerNode(i+1, Math.floor(Math.random() * (30 - 1 + 1)) + 1);
         bank.queueCustomer(cust);
         var custNode = document.createElement('div');
         custNode.innerHTML = cust.id + ' - ' + cust.serviceTime;
         customerList.appendChild(custNode);
     }
+    bank.report();
     while(!bank.isEmpty()){
         bank.dequeueCustomers();
         bank.processCustomer();
