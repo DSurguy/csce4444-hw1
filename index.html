@@ -3,17 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <title>Homework 1 | CSCE 4444 </title>
-    <script type="text/javascript" src="classes.js"></script>
-    <script type="text/javascript" src="runtime.js"></script>
+    <style type="text/css">
+        label{
+            display: block;
+        }
+        button{
+            display: block;
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
-    <input class="numTellers" type="number" />
-    <button>Simulate</button>
+    <button class="randomizeButton">Randomize</button>
+    <label for="numTellers">Number of Tellers</label>
+    <input name="numTellers" type="range" min="4" max="31" value="7"/>&nbsp;<span class="numTellersValue">7</span>
+    <br/><br/>
+    <label for="numCustomers">Number of Customers</label>
+    <input name="numCustomers" type="range" min="100" max="200" value="150"/>&nbsp;<span class="numCustomersValue">150</span>
+    
+    <button class="simulateButton">Simulate</button>
     <div class="customerQueue">
         
     </div>
     <div class="bank">
         
     </div>
+    <script type="text/javascript" src="classes.js"></script>
+    <script type="text/javascript" src="runtime.js"></script>
 </body>
 </html>
