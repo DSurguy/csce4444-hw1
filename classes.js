@@ -22,7 +22,7 @@ Queue.prototype.isEmpty = function (){
     return this.nodes.length == 0;
 };
 Queue.prototype.state = function (){
-    return this.nodes.slice(0).reverse();
+    return this.nodes.slice(0);
 };
 
 /**
@@ -66,11 +66,21 @@ MinHeap.prototype.pop = function (){
         leftChild = curPosition*2;
         rightChild = curPosition*2 + 1;
         if( this._nodes[leftChild] && this._nodes[leftChild].serviceTime < this._nodes[curPosition].serviceTime ){
-            //swap left
-            tempNode = this._nodes[curPosition];
-            this._nodes[curPosition] = this._nodes[leftChild];
-            this._nodes[leftChild] = tempNode;
-            curPosition = leftChild;
+            if( this._nodes[rightChild] && this._nodes[rightChild].serviceTime < this._nodes[curPosition].serviceTime 
+            && this._nodes[rightChild].serviceTime < this._nodes[leftChild].serviceTime ){
+                //swap right
+                tempNode = this._nodes[curPosition];
+                this._nodes[curPosition] = this._nodes[rightChild];
+                this._nodes[rightChild] = tempNode;
+                curPosition = rightChild;
+            }
+            else{
+                //swap left
+                tempNode = this._nodes[curPosition];
+                this._nodes[curPosition] = this._nodes[leftChild];
+                this._nodes[leftChild] = tempNode;
+                curPosition = leftChild;
+            }
         }
         else if( this._nodes[rightChild] && this._nodes[rightChild].serviceTime < this._nodes[curPosition].serviceTime ){
             //swap right

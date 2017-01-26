@@ -9,7 +9,7 @@ document.querySelector('[name=numCustomers]').addEventListener('input', function
 
 document.querySelector('.randomizeButton').addEventListener('click', function (e){
     var numTellersElem = document.querySelector('[name=numTellers]');
-    numTellersElem.value = Math.floor(Math.random() * (31 - 7 + 1)) + 7;
+    numTellersElem.value = Math.floor(Math.random() * (10 - 4 + 1)) + 4;
     numTellersElem.dispatchEvent(new Event('input'));
     
     var numCustomersElem = document.querySelector('[name=numCustomers]');
@@ -20,27 +20,66 @@ document.querySelector('.randomizeButton').addEventListener('click', function (e
 document.querySelector('.simulateButton').addEventListener('click', simulate);
 
 function simulate(){
+    document.querySelector('.reports').innerHTML = '';
+    var reportId = 0;
     var bank = new Bank({
         numTellers: parseInt(document.querySelector('[name=numTellers]').value, 10),
         reporter: function (heapState, queueState){
-            console.log(heapState.map(function (cust){
-                return cust ? cust.serviceTime : '_';
-            }), queueState.length);
+            createReport(heapState, queueState, ++reportId);
         },
-        reportFrequency: 1
+        reportFrequency: 20
     });
-    var numCustomers = parseInt(document.querySelector('[name=numCustomers]').value, 10),
-        customerList = document.querySelector('.customerQueue');
+    var numCustomers = parseInt(document.querySelector('[name=numCustomers]').value, 10);
+
     for( var i=0; i<numCustomers; i++ ){
         var cust = new CustomerNode(i+1, Math.floor(Math.random() * (30 - 1 + 1)) + 1);
         bank.queueCustomer(cust);
-        var custNode = document.createElement('div');
-        custNode.innerHTML = cust.id + ' - ' + cust.serviceTime;
-        customerList.appendChild(custNode);
     }
+
     bank.report();
+
     while(!bank.isEmpty()){
         bank.dequeueCustomers();
         bank.processCustomer();
     }
+}
+
+function createReport (heapState, queueState, reportId){
+    var report = document.createElement('div');
+    report.classList.add('report');
+    report.innerHTML = ''
+    +'<h3>Report '+reportId+'</h3>'
+    +'<div class="content">'
+        +'<div class="customerQueue">'
+            +'<div class="remaining">'+queueState.length+' Remaining</div>'
+            +'<ul class="list">'
+                +queueState.map(function (cust){
+                    return '<li class="customer">'+cust.id+' | '+cust.serviceTime+'</li>';
+                }).join('')
+            +'</ul>'
+        +'</div>'
+        +'<div class="heap">'
+            +'<div class="row" data-row="1">'
+                +heapState.slice(1,2).map(function (cust){
+                    return '<div class="node">'+(cust?cust.serviceTime:'')+'</div>'
+                }).join('')
+            +'</div>'
+            +'<div class="row" data-row="2">'
+                +heapState.slice(2,4).map(function (cust){
+                    return '<div class="node">'+(cust?cust.serviceTime:'')+'</div>'
+                }).join('')
+            +'</div>'
+            +'<div class="row" data-row="3">'
+                +heapState.slice(4,8).map(function (cust){
+                    return '<div class="node">'+(cust?cust.serviceTime:'')+'</div>'
+                }).join('')
+            +'</div>'
+            +'<div class="row" data-row="4">'
+                +heapState.slice(8,16).map(function (cust){
+                    return '<div class="node">'+(cust?cust.serviceTime:'')+'</div>'
+                }).join('')
+            +'</div>'
+        +'</div>'
+    +'</div>';
+    document.querySelector('.reports').appendChild(report);
 }
