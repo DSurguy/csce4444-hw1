@@ -12,3 +12,11 @@ In the programming language of your choice, simulate the experience of a day’s
 6. Repeat steps 4 and 5 until both the heap and queue are empty.
 7. Every 20 customers that pass out of the queue, print the current status of the queue (how many customers are left), and print the current composition of the heap.
 
+#### Solution
+My solution uses javascript, and I had to write a MinHeap and Queue from scratch. They seem to work correctly. The Bank class connects the customer queue and the teller minheap, and handles queueing/dequeueing customers and processing their service times. Reporting is done by dumping the queue and minheap states into a reporter function that then barfs out a bunch of html.
+
+This solution should work in any modern web browser (and some not-so-modern). Just open index.html in your favorite browser, click `Randomize` as much as you like or manually set your values. Once you're satisfied, click `Simulate` and watch the magic!
+
+`classes.js` contains the meat of the program, including my implementations of Queue and MinHeap, as well as the Bank class. `runtime.js` contains the runtime code, including event bindings for buttons in the html, as well as the actual operation of the bank class. 
+
+Here is a link to the solution on codepen in case these bundled files don't work for some stupid reason. [http://codepen.io/DSurguy/pen/ZLXbar](http://codepen.io/DSurguy/pen/ZLXbar)
